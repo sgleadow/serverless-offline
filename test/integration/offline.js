@@ -267,6 +267,28 @@ describe('Offline', () => {
       });
     });
 
+    it('should allow overriding the cache-control header', done => {
+      const offLine = new OffLineBuilder()
+        .addFunctionHTTP('fn1', {
+          path: 'fn1',
+          method: 'GET',
+        }, (event, context, cb) => cb(null, {
+          statusCode: 200,
+          body: JSON.stringify({ data: 'data' }),
+          headers: {
+            'cache-control': 'max-age=60',
+          },
+        })).toObject();
+
+      offLine.inject({
+        method: 'GET',
+        url: '/fn1'
+      }, res => {
+        expect(res.headers).to.have.property('cache-control', 'max-age=60');
+        done();
+      });
+    });
+
     it('should respect existing header regardless of upper/lower casing', done => {
       const offLine = new OffLineBuilder()
         .addFunctionHTTP('fn1', {
