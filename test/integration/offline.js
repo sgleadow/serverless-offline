@@ -267,6 +267,29 @@ describe('Offline', () => {
       });
     });
 
+    it('should respect existing header regardless of upper/lower casing', done => {
+      const offLine = new OffLineBuilder()
+        .addFunctionHTTP('fn1', {
+          path: 'fn1',
+          method: 'GET',
+        }, (event, context, cb) => cb(null, {
+          statusCode: 200,
+          body: JSON.stringify({ data: 'data' }),
+          headers: {
+            'Cache-Control': 'max-age=60',
+          },
+        })).toObject();
+
+      offLine.inject({
+        method: 'GET',
+        url: '/fn1'
+      }, res => {
+        expect(res.headers).not.to.have.property('cache-control');
+        expect(res.headers).to.have.property('Cache-Control', 'max-age=60');
+        done();
+      });
+    });
+
     it('should work with trailing slashes path', done => {
       const offLine = new OffLineBuilder().addFunctionHTTP('hello', {
         path: 'fn3/',
